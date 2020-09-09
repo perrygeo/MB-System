@@ -275,13 +275,27 @@ void wtnav_reinit_filter(wtnav_t *self, bool lowInfoTransition)
     }
 }
 
-void wtnav_reinit_filter_offset(wtnav_t *self, bool lowInfoTransition, double offsetx, double offsety, double offsetz)
+void wtnav_reinit_filter_offset_size(wtnav_t *self, bool lowInfoTransition, double offsetx, double offsety, double offsetz, double use_x_dist_size, double use_y_dist_size, double use_z_dist_size)
 {
     if(NULL!=self){
         TerrainNav *obj = static_cast<TerrainNav *>(self->obj);
         if(NULL!=obj){
         obj->setEstNavOffset(offsetx, offsety, offsetz);
-        obj->reinitFilter(lowInfoTransition);
+            InitVars *ivars = new InitVars(use_x_dist_size,use_y_dist_size,use_z_dist_size);
+        obj->reinitFilter(lowInfoTransition,ivars);
+            delete ivars;
+        }
+        return ;
+    }
+}
+
+void wtnav_reinit_filter_offset(wtnav_t *self, bool lowInfoTransition, double offsetx, double offsety, double offsetz)
+{
+    if(NULL!=self){
+        TerrainNav *obj = static_cast<TerrainNav *>(self->obj);
+        if(NULL!=obj){
+            obj->setEstNavOffset(offsetx, offsety, offsetz);
+            obj->reinitFilter(lowInfoTransition);
         }
         return ;
     }

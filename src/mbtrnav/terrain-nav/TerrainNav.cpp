@@ -42,7 +42,7 @@ TerrainNav::TerrainNav()
 saveDirectory(NULL), vehicleSpecFile(NULL),
 particlesFile(NULL), mapFile(NULL),
 filterType(1),mapType(1),
-terrainMap(NULL),_trnLog(NULL)
+terrainMap(NULL),_trnLog(NULL),_initVars(NULL)
 {
 
 }
@@ -64,6 +64,7 @@ TerrainNav::TerrainNav(char* mapName) {
 	} else {
 		terrainMap = new TerrainMapOctree(this->mapFile);
 	}
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 
@@ -88,6 +89,7 @@ TerrainNav::TerrainNav(char* mapName, char* vehicleSpecs) {
 		this->terrainMap = new TerrainMapOctree(this->mapFile);
 	}
 
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 }
@@ -112,6 +114,7 @@ TerrainNav::TerrainNav(char* mapName, char* vehicleSpecs,
 		this->terrainMap = new TerrainMapOctree(this->mapFile);
 	}
 
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 }
@@ -136,6 +139,7 @@ TerrainNav::TerrainNav(char* mapName, char* vehicleSpecs,
 		this->terrainMap = new TerrainMapOctree(this->mapFile);
 	}
 
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 }
@@ -159,6 +163,7 @@ TerrainNav::TerrainNav(char* mapName, char* vehicleSpecs,
 		this->terrainMap = new TerrainMapOctree(this->mapFile);
 	}
 
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 }
@@ -183,6 +188,7 @@ TerrainNav::TerrainNav(char* mapName, char* vehicleSpecs,
 		this->terrainMap = new TerrainMapOctree(this->mapFile);
 	}
 
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 }
@@ -208,6 +214,9 @@ TerrainNav::TerrainNav(char* mapName, char* vehicleSpecs, char* particles,
 		this->terrainMap = new TerrainMapOctree(this->mapFile);
 	}
 
+    // initialize using compilation defaults
+    // call reinitFilter with new InitVars to customize
+    this->_initVars=new InitVars();
 	//initialize terrainNav private variables
 	initVariables();
 	logs(TL_OMASK(TL_TERRAIN_NAV, TL_LOG),"TerrainNav::Constructor finished.\n");
@@ -233,6 +242,10 @@ TerrainNav::~TerrainNav() {
 	this->saveDirectory=NULL;
 	if(this->particlesFile !=NULL)free(this->particlesFile);
 	this->particlesFile=NULL;
+
+    if(NULL!=this->_initVars){
+    	delete this->_initVars;
+    }
 
 //	if (_posLog) delete _posLog;
 
@@ -296,8 +309,8 @@ void TerrainNav::estimatePose(poseT* estimate, const int& type) {
 	////*estimate += estNavOffset;
 
 	if(std::isnan(estimate->x) || std::isnan(estimate->y)){
-		estimate->covariance[0] = X_STDDEV_INIT*X_STDDEV_INIT;
-		estimate->covariance[2] = Y_STDDEV_INIT*Y_STDDEV_INIT;
+		estimate->covariance[0] = _initVars->x_stddev_init*_initVars->x_stddev_init;
+		estimate->covariance[2] = _initVars->y_stddev_init*_initVars->y_stddev_init;
 	}
 
 	/* Log to a data file */
@@ -678,11 +691,16 @@ void TerrainNav::initVariables() {
 	_initialized = false;
 	bool mapOk = true;
 
+    // create _initVars using defaults
+    // if it doesn't exist
+    if(NULL==_initVars)
+    	_initVars=new InitVars();
+
 	//initialize default variance for window size
 	double windowVar[N_COVAR] =
-			{X_STDDEV_INIT * X_STDDEV_INIT,
-			 0.0, Y_STDDEV_INIT * Y_STDDEV_INIT,
-			 0.0, 0.0, Z_STDDEV_INIT * Z_STDDEV_INIT,
+			{_initVars->x_stddev_init * _initVars->x_stddev_init,
+             0.0, _initVars->y_stddev_init * _initVars->y_stddev_init,
+             0.0, 0.0, _initVars->z_stddev_init * _initVars->z_stddev_init,
 			 0.0, 0.0, 0.0, PHI_STDDEV_INIT * PHI_STDDEV_INIT,
 			 0.0, 0.0, 0.0, 0.0, THETA_STDDEV_INIT * THETA_STDDEV_INIT,
 			 0.0, 0.0, 0.0, 0.0, 0.0, PSI_STDDEV_INIT * PSI_STDDEV_INIT,
@@ -1062,18 +1080,24 @@ void TerrainNav::setEstNavOffset(double offset_x, double offset_y, double offset
 
 //void TerrainNav::reinitFilter(int newState, bool lowInfoTransition) {
 //old state machine declaratino: void TerrainNav::reinitFilter(int newState, bool lowInfoTransition) {
-void TerrainNav::reinitFilter(bool lowInfoTransition) {
+void TerrainNav::reinitFilter(bool lowInfoTransition, InitVars *init_vars) {
 	int interpMapMethod = 1;
 	bool interpMeasAttitude = true;
 	double driftRate = 1;
 	unsigned int distrib_type = 0;
 	int useModWeight = useModifiedWeighting;
 
+    if(NULL!=init_vars){
+        // replace initvars if new one passed in
+        delete _initVars;
+        this->_initVars = new InitVars(init_vars);
+    }// else use existing
+
 	//Default initialization window --> mainly used for broad area reinitializations
 	double windowVar[N_COVAR] = {
-			 X_STDDEV_INIT * X_STDDEV_INIT,
-			 0.0, Y_STDDEV_INIT * Y_STDDEV_INIT,
-			 0.0, 0.0, Z_STDDEV_INIT * Z_STDDEV_INIT,
+			 _initVars->x_stddev_init * _initVars->x_stddev_init,
+			 0.0, _initVars->y_stddev_init * _initVars->y_stddev_init,
+			 0.0, 0.0, _initVars->z_stddev_init * _initVars->z_stddev_init,
 			 0.0, 0.0, 0.0, PHI_STDDEV_INIT * PHI_STDDEV_INIT,
 			 0.0, 0.0, 0.0, 0.0, THETA_STDDEV_INIT * THETA_STDDEV_INIT,
 			 0.0, 0.0, 0.0, 0.0, 0.0, PSI_STDDEV_INIT * PSI_STDDEV_INIT,

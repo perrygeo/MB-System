@@ -184,9 +184,11 @@ extern "C" {
     bool wtnav_outstanding_meas(wtnav_t *self);
     bool wtnav_initialized(wtnav_t *self);
     bool wtnav_is_converged(wtnav_t *self);
-    void wtnav_reinit_filter(wtnav_t *self, bool lowInfoTransition);
+    void wtnav_reinit_filter(wtnav_t *self, bool lowInfoTransition); 
     void wtnav_reinit_filter_offset(wtnav_t *self, bool lowInfoTransition,
-                            double offset_x, double offset_y, double offset_z);
+                                    double offset_x, double offset_y, double offset_z);
+    void wtnav_reinit_filter_offset_size(wtnav_t *self, bool lowInfoTransition,
+                                    double offset_x, double offset_y, double offset_z, double use_x_dist_size, double use_y_dist_size, double use_z_dist_size);
     int  wtnav_get_filter_type(wtnav_t *self);
     int  wtnav_get_filter_state(wtnav_t *self);
     void wtnav_use_highgrade_filter(wtnav_t *self);

@@ -111,6 +111,7 @@ using namespace std;
 
 class PositionLog;
 class TerrainNavLog;
+class InitVars;
 
 /*!
  * Class: TerrainNav
@@ -421,7 +422,7 @@ class TerrainNav
    * 23-Aug-2016 RGH : Exposing for use with TerrainAid and TerrainNavClient
    */
   //old state machine version: void reinitFilter(int newState, bool lowInfoTransition);
-  void reinitFilter(bool lowInfoTransition);
+  void reinitFilter(bool lowInfoTransition, InitVars *init_vars=NULL);
 
 	/* Function: setModifiedWeighting(use)
    * Usage: tercom->tNavFilter->setModifiedWeighting(use)
@@ -684,6 +685,8 @@ class TerrainNav
 
   // log files
   TerrainNavLog *_trnLog;
+
+    InitVars *_initVars;
 
 };
 

@@ -200,6 +200,47 @@ should be turned on.  */
 #define USE_PARTICLE_FILE 0 //1=true, 0=false (default)
 #endif
 
+// InitVars is a structure that enables TRN reinits
+// with search radius that may be configured at run time.
+// TerrainNav uses a default version in it's constructor.
+// To customize, callers must call reinitFilter, passing in an InitVars
+// instance. Calling reinitFilter is currently the only
+// way to change the values, ensuring that the values are not changed
+// while the filter is running.
+class InitVars{
+    public:
+    // TODO: incorporate other parameters?
+    // default CTOR
+    InitVars(){
+        // initize using compile-time defaults
+        x_stddev_init=X_STDDEV_INIT;
+        y_stddev_init=Y_STDDEV_INIT;
+        z_stddev_init=Z_STDDEV_INIT;
+    }
+
+    // initializing CTOR
+    InitVars(double x, double y, double z){
+        x_stddev_init=x;
+        y_stddev_init=y;
+        z_stddev_init=z;
+    }
+
+    // copy CTOR
+    InitVars(InitVars *src){
+        // initize using compile-time defaults
+        x_stddev_init=src->x_stddev_init;
+        y_stddev_init=src->y_stddev_init;
+        z_stddev_init=src->z_stddev_init;
+    }
+
+    // DTOR
+    ~InitVars(){};
+
+    double x_stddev_init;
+    double y_stddev_init;
+    double z_stddev_init;
+};
+
 /******************************************************************************
  FILTER MOTION UPDATE PARAMETERS
 ******************************************************************************/

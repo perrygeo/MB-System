@@ -875,6 +875,9 @@ double use_offset_time = 0.0;
 double use_offset_e = 0.0;
 double use_offset_n = 0.0;
 double use_offset_z = 0.0;
+double use_x_dist_size=0.0;
+double use_y_dist_size=0.0;
+double use_z_dist_size=0.0;
 double use_covariance[4] = {0.0, 0.0, 0.0, 0.0};
 
 char mRecordBuf[MBSYS_KMBES_MAX_NUM_MRZ_DGMS][64*1024];
@@ -3735,7 +3738,10 @@ int main(int argc, char **argv) {
                     //wtnav_reinit_filter(trn_instance, true);
                     fprintf(stderr, "--reinit time_d:%.6f centered on offset: %f %f %f\n",
                                   ping[i_ping_process].time_d, use_offset_e, use_offset_n, use_offset_z);
-                    wtnav_reinit_filter_offset(trn_instance, true, use_offset_n, use_offset_e, use_offset_z);
+                    //wtnav_reinit_filter_offset(trn_instance, true, use_offset_n, use_offset_e, use_offset_z);
+
+// TODO: calculate value of use_*_dist_size
+                    wtnav_reinit_filter_offset_size(trn_instance, true, use_offset_n, use_offset_e, use_offset_z,use_x_dist_size, use_y_dist_size, use_z_dist_size);
                     mlog_tprintf(mbtrnpp_mlog_id, "i,trn filter reinit time_d:%.6f centered on offset: %f %f %f\n",
                                   ping[i_ping_process].time_d, use_offset_e, use_offset_n, use_offset_z);
                     MST_COUNTER_INC(app_stats->stats->events[MBTPP_EV_MB_REINIT]);
