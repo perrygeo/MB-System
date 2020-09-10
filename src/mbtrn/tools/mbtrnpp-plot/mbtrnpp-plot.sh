@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/local/bin/bash
 #/usr/bin/bash
 
 #########################################
@@ -785,3 +785,4 @@ run_jobs
 vout ""
 
 exit 0
+
